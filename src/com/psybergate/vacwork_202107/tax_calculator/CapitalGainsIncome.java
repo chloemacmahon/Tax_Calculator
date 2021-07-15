@@ -10,8 +10,7 @@ public class CapitalGainsIncome extends Income{
     private boolean primaryResidence;
 
     public CapitalGainsIncome(double initialValue, double valueAdded, double sellingPrice) {
-        super("Capital gains");
-        setTaxableIncome(calculateTaxableIncome());
+        super("Capital gains", 40);
         setInitialValue(initialValue);
         setValueAdded(valueAdded);
         setSellingPrice(sellingPrice);
@@ -27,7 +26,6 @@ public class CapitalGainsIncome extends Income{
         else
             return tmpTaxableIncome;
     }
-
 
     //Accessor and mutator method for initialValue
     public void setInitialValue(double initialValue) {

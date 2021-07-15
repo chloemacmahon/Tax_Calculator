@@ -1,21 +1,17 @@
 package com.psybergate.vacwork_202107.tax_calculator;
 
-public class Income {
-    private double taxableIncome;
+public abstract class Income {
+
     private String incomeType;
 
-    public Income(String incomeType) {
+    private int includedPercentageTax;
+
+    public Income(String incomeType, int includedPercentageTax) {
         setIncomeType(incomeType);
+        setIncludedPercentageTax(includedPercentageTax);
     }
 
-    //Accessor and mutator method for taxableIncome
-    public void setTaxableIncome(double taxableIncome) {
-        this.taxableIncome = taxableIncome;
-    }
-
-    public double getTaxableIncome() {
-        return this.taxableIncome;
-    }
+    public abstract double calculateTaxableIncome();
 
     //Accessor and mutator method for incomeType
     public void setIncomeType(String incomeType) {
@@ -26,9 +22,15 @@ public class Income {
         return this.incomeType;
     }
 
-    public double calculateTaxableIncome() {
-        return taxableIncome;
+    public int getIncludedPercentageTax() {
+        return includedPercentageTax;
     }
+
+    public void setIncludedPercentageTax(int includedPercentageTax) {
+        this.includedPercentageTax = includedPercentageTax;
+    }
+
+
 
 
 }

@@ -2,9 +2,9 @@ package com.psybergate.vacwork_202107.tax_calculator;
 
 public class Tax {
 
-    private static final int[] TAX_BRACKETS = {216200,337800,467500,613600,782200,165600}; //Top bracket declaration as a constant, useful when calculating other countries tax
+    private static final int[] TAX_BRACKETS = {216200, 337800, 467500, 613600, 782200, 165600}; //Top bracket declaration as a constant, useful when calculating other countries tax
     //Above 65 is 128650 is 0 % tax and 83100 for under 65
-    private static final int[] TAX_PERCENTAGES = {18,26,31,36,39,41,45}; //Percentages associated with each tax bracket lat 45 is for anything higher than the largest tax bracket
+    private static final int[] TAX_PERCENTAGES = {18, 26, 31, 36, 39, 41, 45}; //Percentages associated with each tax bracket lat 45 is for anything higher than the largest tax bracket
 
     private Income[] incomes;
 
@@ -15,44 +15,65 @@ public class Tax {
         setAge(age);
     }
 
-    public double calculateGrossTax () {
+    public double calculateGrossTax() {
         int iTaxBracket = calculateTaxBracket();
         double dTaxableIncome = calculateTotalTaxableIncome();
-        return calculateGrossTax(dTaxableIncome,0, iTaxBracket);
+        return calculateGrossTax(dTaxableIncome, 0, iTaxBracket); // 1
     }
 
-    public double calculateGrossTax(double remainingIncome, int currentTaxBracket, int finalTaxBracket) {
+    private double calculateGrossTax1(double remainingIncome, int currentTaxBracket, int finalTaxBracket) {
+
         if (currentTaxBracket == finalTaxBracket) {
-            return remainingIncome * TAX_PERCENTAGES[currentTaxBracket]/100;
-        } else {
-            return TAX_BRACKETS[currentTaxBracket] * TAX_PERCENTAGES[currentTaxBracket]/100 + calculateGrossTax(remainingIncome-TAX_BRACKETS[currentTaxBracket],currentTaxBracket+1, finalTaxBracket);
+            return remainingIncome * TAX_PERCENTAGES[currentTaxBracket] / 100;
+        } else { //2
+            return TAX_BRACKETS[currentTaxBracket] * TAX_PERCENTAGES[currentTaxBracket] / 100.0 + calculateGrossTax(remainingIncome - TAX_BRACKETS[currentTaxBracket], currentTaxBracket + 1, finalTaxBracket);
         }
     }
 
-    public int calculateTaxBracket(){
+    //Calculate tax bracket is there because remaining income gets reduced every iteration and tax bracket increases in size thus checking if a remaining amount is less than a tax bracket will always be true
+    private double calculateGrossTax(double remainingIncome, int currentTaxBracket, int finalTaxBracket) {
+        if (currentTaxBracket == finalTaxBracket) {
+            return remainingIncome * TAX_PERCENTAGES[currentTaxBracket] / 100;
+        } else { //2
+            return TAX_BRACKETS[currentTaxBracket] * TAX_PERCENTAGES[currentTaxBracket] / 100.0 + calculateGrossTax(remainingIncome - TAX_BRACKETS[currentTaxBracket], currentTaxBracket + 1, finalTaxBracket);
+        }
+    }
+
+    //calculate tax bracket in the calculateGrossTax
+    private int calculateTaxBracket() {
         int iCounter = 0;
         double dRemaining = calculateTotalTaxableIncome();
         while (dRemaining > TAX_BRACKETS[iCounter] && iCounter < TAX_BRACKETS.length) {
             dRemaining = dRemaining - TAX_BRACKETS[iCounter];
             iCounter++;
         }
-        System.out.println("iCounter = " + iCounter);
         return iCounter;
     }
 
-    public double calculateTotalTaxableIncome(){
+    public double calculateTotalTaxableIncome() {
         double dTotalIncome = 0;
-        double dTotalCapitalGainsIncome =0;
-        for (int i = 0; i < incomes.length; i++) {
-            if (incomes[i] instanceof CapitalGainsIncome)
-                dTotalCapitalGainsIncome += incomes[i].calculateTaxableIncome();
-            else
-                dTotalIncome += incomes[i].calculateTaxableIncome();
+        double dTotalCapitalGainsIncome = calculateTotalCapitalGainsTax();
+        for (Income income : incomes) {
+            if (income.getIncomeType().compareTo("Capital gains") != 0)
+                dTotalIncome += income.calculateTaxableIncome() * income.getIncludedPercentageTax() / 100;
         }
         if (dTotalCapitalGainsIncome > 0) {
-            dTotalIncome += (dTotalCapitalGainsIncome - 40000) * .4;
+            dTotalIncome += dTotalCapitalGainsIncome; // (100000-40000)*.4 = 24000; (200000+ 100000 -40000)*.4 != (200000-40000)*.4 +(100000-40000)*.4       }
         }
         return dTotalIncome;
+    }
+
+    public double calculateTotalCapitalGainsTax() {
+        double dTotalCapitalGainsIncome = 0;
+        double dTaxableCapitalGainsIncome = 0;
+        for (Income income : incomes) {
+            if (income.getIncomeType().compareTo("Capital gains") == 0)
+                dTotalCapitalGainsIncome += income.calculateTaxableIncome();
+        }
+        if (dTotalCapitalGainsIncome > 0) {
+            dTaxableCapitalGainsIncome = (dTotalCapitalGainsIncome - 40000) * .4; // (100000-40000)*.4 = 24000; (200000+ 100000 -40000)*.4 != (200000-40000)*.4 +(100000-40000)*.4       }
+        }
+        return dTaxableCapitalGainsIncome;
     }
 
     public double calculateRebates() {
