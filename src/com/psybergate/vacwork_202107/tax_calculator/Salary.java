@@ -7,8 +7,7 @@ public class Salary extends Income {
     private int frequency; //Amount amounts paid for the period, ex monthly would be 12
 
     public Salary(double amount, int frequency) {
-        super("Salary");
-        setTaxableIncome(calculateTaxableIncome());
+        super("Salary",100);
         setAmount(amount);
         setFrequency(frequency);
     }
@@ -27,7 +26,7 @@ public class Salary extends Income {
         return this.amount;
     }
 
-    //Accessor and mutator method for freqwency
+    //Accessor and mutator method for frequency
     public void setFrequency(int frequency) {
         this.frequency = frequency;
     }

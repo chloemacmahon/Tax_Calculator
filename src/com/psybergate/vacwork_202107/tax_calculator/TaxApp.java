@@ -1,8 +1,13 @@
 package com.psybergate.vacwork_202107.tax_calculator;
 
-public class TaxCalculator {
+import java.util.Scanner;
+
+public class TaxApp {
     public static void main(String[] args) {
-        Income i1 = new Salary(337800,1);
+        System.out.println("Enter a monthly salary");
+        Scanner input = new Scanner(System.in);
+        double monthlySalary = input.nextDouble();
+        Income i1 = new Salary(monthlySalary,1);
 
         Income[] incomes = {i1};
 
