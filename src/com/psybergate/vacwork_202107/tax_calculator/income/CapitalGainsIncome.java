@@ -1,4 +1,4 @@
-package com.psybergate.vacwork_202107.tax_calculator;
+package com.psybergate.vacwork_202107.tax_calculator.income;
 public class CapitalGainsIncome extends Income{
 
     private double initialValue;
@@ -10,7 +10,7 @@ public class CapitalGainsIncome extends Income{
     private boolean primaryResidence;
 
     public CapitalGainsIncome(double initialValue, double valueAdded, double sellingPrice) {
-        super("Capital gains", 40);
+        super("CG01","Capital gains", 40);
         setInitialValue(initialValue);
         setValueAdded(valueAdded);
         setSellingPrice(sellingPrice);
@@ -19,8 +19,11 @@ public class CapitalGainsIncome extends Income{
     @Override
     public double calculateTaxableIncome() {
         double tmpTaxableIncome = getSellingPrice() - (getInitialValue()+getValueAdded());
-        if (isPrimaryResidence() && tmpTaxableIncome < 2000000)
+        if (isPrimaryResidence() && tmpTaxableIncome < 2000000 && tmpTaxableIncome > 0)
             return 0;
+        else if (isPrimaryResidence() && tmpTaxableIncome < 0) {
+            return -1 * tmpTaxableIncome; //Accounts for loss to be deducted from the profits
+        }
         else if (isPrimaryResidence())
             return tmpTaxableIncome - 2000000;
         else
