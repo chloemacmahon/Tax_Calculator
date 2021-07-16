@@ -1,12 +1,15 @@
-package com.psybergate.vacwork_202107.tax_calculator;
+package com.psybergate.vacwork_202107.tax_calculator.income;
 
 public abstract class Income {
+
+    private String id;
 
     private String incomeType;
 
     private int includedPercentageTax;
 
-    public Income(String incomeType, int includedPercentageTax) {
+    public Income(String id, String incomeType, int includedPercentageTax) {
+        setId(id);
         setIncomeType(incomeType);
         setIncludedPercentageTax(includedPercentageTax);
     }
@@ -30,7 +33,11 @@ public abstract class Income {
         this.includedPercentageTax = includedPercentageTax;
     }
 
+    public String getId() {
+        return id;
+    }
 
-
-
+    public void setId(String id) {
+        this.id = id;
+    }
 }
