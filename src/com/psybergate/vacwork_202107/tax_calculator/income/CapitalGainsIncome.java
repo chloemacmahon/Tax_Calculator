@@ -10,7 +10,7 @@ public class CapitalGainsIncome extends Income{
     private boolean primaryResidence;
 
     public CapitalGainsIncome(double initialValue, double valueAdded, double sellingPrice) {
-        super("CG01","Capital gains", 40);
+        super(1,"Capital gains", 40);
         setInitialValue(initialValue);
         setValueAdded(valueAdded);
         setSellingPrice(sellingPrice);
@@ -28,6 +28,12 @@ public class CapitalGainsIncome extends Income{
             return tmpTaxableIncome - 2000000;
         else
             return tmpTaxableIncome;
+    }
+
+    public String insertString(int incomeID){
+        String sql = "INSERT INTO capital_gains(income_id,initial_property_value,value_added,selling_value,primary_residence)"
+                + "VALUES ("+incomeID+","+getInitialValue()+","+getValueAdded()+","+getSellingPrice()+","+isPrimaryResidence()+")";
+        return sql;
     }
 
     //Accessor and mutator method for initialValue

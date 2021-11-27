@@ -1,5 +1,7 @@
 package com.psybergate.vacwork_202107.tax_calculator.income;
 
+import java.sql.PreparedStatement;
+
 public class Salary extends Income {
 
     private double amount;
@@ -7,7 +9,7 @@ public class Salary extends Income {
     private int frequency; //Amount amounts paid for the period, ex monthly would be 12
 
     public Salary(double amount, int frequency) {
-        super("S01","Salary",100);
+        super(1,"Salary",100);
         setAmount(amount);
         setFrequency(frequency);
     }
@@ -15,6 +17,12 @@ public class Salary extends Income {
     @Override
     public double calculateTaxableIncome() {
         return getAmount() * getFrequency();
+    }
+
+    public String insertString(int incomeID){
+        String sql = "INSERT INTO salary(income_id,income_per_period,period)"
+                + "VALUES ("+incomeID+","+getAmount()+","+getFrequency()+")";
+        return sql;
     }
 
     //Accessor and mutator method for amount

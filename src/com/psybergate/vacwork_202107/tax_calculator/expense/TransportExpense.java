@@ -17,7 +17,7 @@ public class TransportExpense extends Expense{
     private static final double[] MAINTENANCE_COST = {.386,.483,.532,.581,.683,.802,.996};
 
     public TransportExpense(int kmDriven, double carValue) {
-        super("T01", "Travel", 80);
+        super(1, "Travel", 80);
         setKmDriven(kmDriven);
         setCarValue(carValue);
     }
@@ -27,7 +27,14 @@ public class TransportExpense extends Expense{
         while (counter < VEHICLE_VALUE.length && getCarValue() > VEHICLE_VALUE[counter]) {
             counter++;
         }
-        return (FIXED_ANNUAL_COST[counter] + FUEL_COST[counter] * getKmDriven() + MAINTENANCE_COST[counter] * getKmDriven())*getIncludedPercentage()/100.0;
+        counter--;
+        return (FIXED_ANNUAL_COST[counter] + FUEL_COST[counter] * getKmDriven() + MAINTENANCE_COST[counter] * getKmDriven());
+    }
+
+    public String insertString(int expenseID){
+        String sql = "INSERT INTO pension(expense_id,km_driven,vehicle_value)"
+                + "VALUES ("+expenseID+","+getKmDriven()+","+getCarValue()+")";
+        return sql;
     }
 
     public int getKmDriven() {

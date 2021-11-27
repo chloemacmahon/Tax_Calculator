@@ -2,13 +2,13 @@ package com.psybergate.vacwork_202107.tax_calculator.expense;
 
 public abstract class Expense {
 
-    private String id;
+    private int id;
 
     private String type;
 
     private int includedPercentage;
 
-    public Expense(String id, String type, int includedPercentage) {
+    public Expense(int id, String type, int includedPercentage) {
         setId(id);
         setType(type);
         setIncludedPercentage(includedPercentage);
@@ -16,11 +16,13 @@ public abstract class Expense {
 
     public abstract double calculateTaxableExpense();
 
-    public String getId() {
+    public abstract String insertString(int expenseID);
+
+    public int getId() {
         return id;
     }
 
-    public void setId(String id) {
+    public void setId(int id) {
         this.id = id;
     }
 
