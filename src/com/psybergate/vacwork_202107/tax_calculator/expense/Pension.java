@@ -11,7 +11,7 @@ public class Pension extends Expense{
     private static final int MAX_CONTRIBUTION = 350000;
 
     public Pension(double amountContributed, Salary salary) {
-        super("P01", "Pension", 100);
+        super(1, "Pension", 100);
         setAmountContributed(amountContributed);
         setSalary(salary);
     }
@@ -21,6 +21,12 @@ public class Pension extends Expense{
             return Math.min(salary.calculateTaxableIncome() * .275, MAX_CONTRIBUTION);
         } else
             return amountContributed;
+    }
+
+    public String insertString(int expenseID){
+        String sql = "INSERT INTO pension(expense_id,total_salary,total_contributed)"
+                + "VALUES ("+expenseID+","+salary.calculateTaxableIncome()+","+getAmountContributed()+")";
+        return sql;
     }
 
     public double getAmountContributed() {

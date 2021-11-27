@@ -1,8 +1,11 @@
 package com.psybergate.vacwork_202107.tax_calculator;
 
 import java.util.List;
+
 import com.psybergate.vacwork_202107.tax_calculator.expense.*;
 import com.psybergate.vacwork_202107.tax_calculator.income.*;
+import com.psybergate.vacwork_202107.tax_calculator.rebate.Rebate;
+import com.psybergate.vacwork_202107.tax_calculator.tax_payer.Individual;
 
 public class TaxCalculator {
 
@@ -10,120 +13,113 @@ public class TaxCalculator {
     //Above 65 is 128650 is 0 % tax and 83100 for under 65
     private static final int[] TAX_PERCENTAGES = {18, 26, 31, 36, 39, 41, 45}; //Percentages associated with each tax bracket lat 45 is for anything higher than the largest tax bracket
 
-    private List<Income> incomes;
+    private Individual taxPayer;
 
-    private List<Expense> expenses;
+    private int year;
 
-    private int age;
-
-    public TaxCalculator(List<Income> incomes, List<Expense> expenses, int age) {
-        setIncomes(incomes);
-        setExpenses(expenses);
-        setAge(age);
+    public TaxCalculator(Individual taxPayer, int year) {
+        setTaxPayer(taxPayer);
+        setYear(year);
     }
 
     public double calculateNetTax() {
-        double grossTax = Math.round(calculateGrossTax()) ;
-        double rebates = calculateRebates();
+        double grossTax = Math.round(calculateGrossTax());
+        double rebates = calculateRebate();
         double netTax;
         if (grossTax >= rebates)
             netTax = grossTax - rebates;
         else
             netTax = 0;
-
         return netTax;
     }
 
     public double calculateGrossTax() {
-        return calculateGrossTax(calculateTotalTaxableIncome(),0);
+        return calculateGrossTax(calculateTotalTaxableIncome(), 0);
     }
+
     private double calculateGrossTax(double totalIncome, int currentTaxBracket) {
-        if (currentTaxBracket == 0 && totalIncome <= TAX_BRACKETS[currentTaxBracket] ) {
-            if (getAge() >= 75 && totalIncome <= 151100) // calculates minimum tax amounts
+        if (currentTaxBracket == 0 && totalIncome <= TAX_BRACKETS[currentTaxBracket]) {
+            if (getTaxPayer().getAge() >= 75 && totalIncome <= 151100) // calculates minimum tax amounts
                 return 0;
-            else if (getAge() >= 65 && totalIncome <= 135150)
+            else if (getTaxPayer().getAge() >= 65 && totalIncome <= 135150)
                 return 0;
             else if (totalIncome <= 87300)
                 return 0;
             else {
-                return totalIncome * TAX_PERCENTAGES[currentTaxBracket]/100.0;
+                return totalIncome * TAX_PERCENTAGES[currentTaxBracket] / 100.0;
             }
         } else if (currentTaxBracket < 6 && totalIncome <= TAX_BRACKETS[currentTaxBracket]) {
-            return (totalIncome-TAX_BRACKETS[currentTaxBracket-1]) * TAX_PERCENTAGES[currentTaxBracket]/100.0;
+            return (totalIncome - TAX_BRACKETS[currentTaxBracket - 1]) * TAX_PERCENTAGES[currentTaxBracket] / 100.0;
         } else if (currentTaxBracket >= 6) {
-            return (totalIncome-TAX_BRACKETS[currentTaxBracket-1]) * TAX_PERCENTAGES[currentTaxBracket]/100.0;
-        }else {
+            return (totalIncome - TAX_BRACKETS[currentTaxBracket - 1]) * TAX_PERCENTAGES[currentTaxBracket] / 100.0;
+        } else {
             if (currentTaxBracket < 1)
-                return (TAX_BRACKETS[currentTaxBracket]) * TAX_PERCENTAGES[currentTaxBracket]/100.0 + calculateGrossTax(totalIncome,currentTaxBracket+1);
+                return (TAX_BRACKETS[currentTaxBracket]) * TAX_PERCENTAGES[currentTaxBracket] / 100.0 + calculateGrossTax(totalIncome, currentTaxBracket + 1);
             else
-                return (TAX_BRACKETS[currentTaxBracket]-TAX_BRACKETS[currentTaxBracket-1]) * TAX_PERCENTAGES[currentTaxBracket]/100.0 + calculateGrossTax(totalIncome,currentTaxBracket+1);
+                return (TAX_BRACKETS[currentTaxBracket] - TAX_BRACKETS[currentTaxBracket - 1]) * TAX_PERCENTAGES[currentTaxBracket] / 100.0 + calculateGrossTax(totalIncome, currentTaxBracket + 1);
         }
     }
 
     public double calculateTotalTaxableIncome() {
+        return calculateNetTaxableIncome() - calculateTotalTaxableExpenses();
+    }
+
+    public double calculateNetTaxableIncome() {
         double dTotalIncome = 0;
         double dTotalCapitalGainsIncome = calculateTotalCapitalGainsTax();
-        for (Income income : incomes) {
-            if (!(income.getIncomeType().equals("Capital gains")))
+        for (Income income : getTaxPayer().getIncomes()) {
+            if (!(income.getType().equals("Capital gains")))
                 dTotalIncome += income.calculateTaxableIncome() * income.getIncludedPercentageTax() / 100;
         }
         if (dTotalCapitalGainsIncome > 0) {
             dTotalIncome += dTotalCapitalGainsIncome; // (100000-40000)*.4 = 24000; (200000+ 100000 -40000)*.4 != (200000-40000)*.4 +(100000-40000)*.4       }
         }
-        return dTotalIncome - calculateTotalTaxableExpenses(dTotalIncome);
+        return dTotalIncome;
     }
 
     public double calculateTotalCapitalGainsTax() {
         double dTotalCapitalGainsIncome = 0;
         double dTaxableCapitalGainsIncome = 0;
-        for (Income income : incomes) {
-            if (income.getIncomeType().equals("Capital gains"))
+        for (Income income : getTaxPayer().getIncomes()) {
+            if (income.getType().equals("Capital gains"))
                 dTotalCapitalGainsIncome += income.calculateTaxableIncome();
         }
         if (dTotalCapitalGainsIncome > 40000) {
             dTaxableCapitalGainsIncome = (dTotalCapitalGainsIncome - 40000) * .4; // (100000-40000)*.4 = 24000; (200000+ 100000 -40000)*.4 != (200000-40000)*.4 +(100000-40000)*.4       }
-        }
+        } else return 0;
         return dTaxableCapitalGainsIncome;
     }
 
-    public double calculateTotalTaxableExpenses(double taxableIncome) {
+    public double calculateTotalTaxableExpenses() {
         double totalExpense = 0;
-        for (Expense expense: getExpenses()) {
+        for (Expense expense : getTaxPayer().getExpenses()) {
             totalExpense += expense.calculateTaxableExpense();
         }
         return totalExpense;
     }
 
-    private double calculateRebates() {
-        double dRebates = 15714;
-        if (getAge() >= 65)
-            dRebates += 8613;
-        if (getAge() >= 75)
-            dRebates += 2871;
-        return dRebates;
+    private double calculateRebate() {
+        double rebateTotal = 0;
+        for (Rebate rebate : getTaxPayer().getRebates()){
+            System.out.println("rebate = " + rebate.calculateRebate());
+            rebateTotal += rebate.calculateRebate();
+        }
+        return rebateTotal;
     }
 
-    private int getAge() {
-        return age;
+    public Individual getTaxPayer() {
+        return taxPayer;
     }
 
-    private void setAge(int age) {
-        this.age = age;
+    public void setTaxPayer(Individual taxPayer) {
+        this.taxPayer = taxPayer;
     }
 
-    public List<Income> getIncomes() {
-        return incomes;
+    public int getYear() {
+        return year;
     }
 
-    private void setIncomes(List<Income> incomes) {
-        this.incomes = incomes;
-    }
-
-    public List<Expense> getExpenses() {
-        return expenses;
-    }
-
-    public void setExpenses(List<Expense> expenses) {
-        this.expenses = expenses;
+    public void setYear(int year) {
+        this.year = year;
     }
 }
